@@ -27,7 +27,7 @@ module.exports = function(logger, poolConfig){
         }
 
         connection.query(
-            'SELECT password FROM pool_worker WHERE username = LOWER(?)',
+            'SELECT password FROM workers WHERE name = LOWER(?)',
             [workerName.toLowerCase()],
             function(err, result){
                 if (err){
@@ -39,7 +39,7 @@ module.exports = function(logger, poolConfig){
                     if(mposConfig.autoCreateWorker){
                         var account = workerName.split('.')[0];
                         connection.query(
-                            'SELECT id,username FROM accounts WHERE username = LOWER(?)',
+                            'SELECT id,name FROM accounts WHERE username = LOWER(?)',
                             [account.toLowerCase()],
                             function(err, result){
                                 if (err){
@@ -79,9 +79,13 @@ module.exports = function(logger, poolConfig){
     };
 
     this.handleShare = function(isValidShare, isValidBlock, shareData){
+    coin = db.Column(db.String(255))
+    blkheight = db.Column(db.BigInteger)
 
         var dbData = [
             shareData.ip,
+            coin,
+            shareData.height,
             shareData.worker,
             isValidShare ? 'Y' : 'N',
             isValidBlock ? 'Y' : 'N',
@@ -90,7 +94,7 @@ module.exports = function(logger, poolConfig){
             shareData.blockHash ? shareData.blockHash : (shareData.blockHashInvalid ? shareData.blockHashInvalid : '')
         ];
         connection.query(
-            'INSERT INTO `shares` SET time = NOW(), rem_host = ?, username = ?, our_result = ?, upstream_result = ?, difficulty = ?, reason = ?, solution = ?',
+            'INSERT INTO `shares` SET time = NOW(), ip = ?, coin = ?, blkheight = ?, user = ?, oresult = ?, uresult = ?, difficulty = ?, reason = ?, solution = ?',
             dbData,
             function(err, result) {
                 if (err)
