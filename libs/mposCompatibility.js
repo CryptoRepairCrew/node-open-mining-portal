@@ -39,7 +39,7 @@ module.exports = function(logger, poolConfig){
                     if(mposConfig.autoCreateWorker){
                         var account = workerName.split('.')[0];
                         connection.query(
-                            'SELECT id,name FROM accounts WHERE username = LOWER(?)',
+                            'SELECT id,username FROM user WHERE username = LOWER(?)',
                             [account.toLowerCase()],
                             function(err, result){
                                 if (err){
@@ -50,7 +50,7 @@ module.exports = function(logger, poolConfig){
                                     authCallback(false);
                                 }else{
                                     connection.query(
-                                        "INSERT INTO `pool_worker` (`account_id`, `username`, `password`) VALUES (?, ?, ?);",
+                                        "INSERT INTO `workers` (`id`, `name`, `password`) VALUES (?, ?, ?);",
                                         [result[0].id,workerName.toLowerCase(),password],
                                         function(err, result){
                                             if (err){
@@ -106,20 +106,7 @@ module.exports = function(logger, poolConfig){
     };
 
     this.handleDifficultyUpdate = function(workerName, diff){
-
-        connection.query(
-            'UPDATE `pool_worker` SET `difficulty` = ' + diff + ' WHERE `username` = ' + connection.escape(workerName),
-            function(err, result){
-                if (err)
-                    logger.error(logIdentify, logComponent, 'Error when updating worker diff: ' +
-                        JSON.stringify(err));
-                else if (result.affectedRows === 0){
-                    connection.query('INSERT INTO `pool_worker` SET ?', {username: workerName, difficulty: diff});
-                }
-                else
-                    console.log('Updated difficulty successfully', result);
-            }
-        );
+                console.log('Updated difficulty successfully', result);
     };
 
 
